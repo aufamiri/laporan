@@ -5,7 +5,8 @@
 \usepackage[indonesian]{babel}
 
 \makeatletter
-\renewcommand{\maketitle}{\bgroup\setlength{\parindent}{0pt}
+\renewcommand{\maketitle}{
+\bgroup\setlength{\parindent}{0pt}
 \begin{flushleft}
   \LARGE\textbf{\@title}
 
@@ -59,6 +60,15 @@ Data yang sudah disimpan ke dalam server, dapat digunakan dengan berbagai keperl
 
 \section*{Bagaimana Pemanfaatannya}
 Pemanfaatannya sendiri sangat banyak, dengan menggunakan \textit{telemedicine} seperti ini, suatu rumah sakit dapat bekerja sama satu sama lain dan meningkatkan tingkat kesembuhan dimanapun lokasi rumah sakit tersebut.
+
+Contoh pemanfaatan lainnya adalah saat pasien masih berada di ambulan dan memerlukan pertolongan pertama yang tepat guna sehingga membantu dokter yang akan menangani pasien tersebut nantinya.
+
+Terakhir adalah untuk menghubungkan antara dokter yang sedang di tempat (sedang \textit{shift} jaga di rumah sakit) dengan dokter senior yang sedang tidak ada di rumah sakit. Dengan menggunakan teknologi \textit{telemedicine}, dokter senior tersebut dapat langsung memberikan arahan yang sesuai dengan kasus pasien pada saat itu.
+
+\section*{Hambatan Saat Ini}
+Masih terdapat beberapa mesin EKG yang tidak dapat melakukan konversi data menjadi XML-ECG, SCP-ECG, maupun DICOM-ECG sehingga membuat data yang dikirimkan tidak dikenal dan gagal disimpan.
+
+Selain itu, terdapat beberapa perbedaan besar data antara ketiga format yang didukung oleh sistem ini. SCP-ECG misalnya, memiliki data sebesar 15KB - 30KB, dan dapat menyimpan data dalam bentuk serial. Namun, data tersebut berbentuk kode biner sehingga cukup sulit untuk diintegrasikan ke dalam PHR. DICOM-ECG memilki besar data yang lebih banyak, namun data tersebut dapat langsung disimpan dalam PACS rumah sakit, sayangya, masih sedikit PACS yang dapat diakses secara bebas tanpa harus menggunakan jaringan internal rumah sakit. XML-ECG dengan ukuran data 500KB dengan gelombang EKG yang tidak ter-\textit{compress} membuat proses pengunduhan pada gawai dirasa teralu berat apabila diunduh dengan menggunakan jaringan 4G dan akan menggunakan media penyimpanan yang lebih banyak.
 
 \section*{Referensi}
 
