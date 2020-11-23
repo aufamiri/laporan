@@ -1,0 +1,79 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{indentfirst}
+\usepackage{titlesec}
+
+\makeatletter
+\renewcommand{\maketitle}{
+    \bgroup\setlength{\parindent}{0pt}
+    \begin{flushleft}
+        \LARGE\textbf{\@title}
+
+        \normalsize\@author
+    \end{flushleft}\egroup
+}
+
+\titleformat*{\section}{\Large\bfseries}
+\titleformat*{\subsection}{\normalsize\bfseries}
+
+\title{Resume CENIM 2020}
+\author{Aufa Nabil Amiri - 0721 17 4000 0029}
+\date{}
+
+
+\begin{document}
+
+\maketitle
+
+\section*{Deep Learning with Small Visual Data \\
+  \footnotesize by Prof. Kai - Lung Hua, National Taiwan University of Science and Technology}
+
+\subsection*{Defect Detection}
+
+The problem with the current deep learning technique right now is that it is required a lot of image or visual data to function properly and achived the targeted accuracy. This bring about another problem, namely limited memory that the computer has will impact how much data that we are able to feed to the computer.
+
+There are a few things to do to mitigate the short of data while still retaining the targeted accuracy. First, we need to learn the distribution of normal data, this is quite important as a normal data is important on the general prediction of the image. Anything else can be considered defects and will be used to improve resiliency of the model.
+
+An example of this is on defect detection on a photos. One of the biggest problem is the shortage of defect photos in the wild, thus, making the detection is harder than necessary. One of the proposed method by Prof. Kai - Lung Hua is to use a memory to "remember" how is the shape of other normal data and try to fix it using said memory.
+
+While using memory approach has been succesfully improving the accuracy, however on some cases it still not enough. Another technique is called multi-thresholding. This approach is based on the traditional single-thresholding and able to increase the accuracy on detecting the defect on a photos.
+
+\subsection*{Noisy Data Problem}
+
+Oftenly, we need to deal with defects data or called noisy data. While this might not be a good thing on an initial training state, however a noise data is needed to improve the resiliency of a model. There are some method to prevent the noisy data from affecting our model such as, Sparse Addressing and Trust Region Memory Updates.
+
+Sparse Addressing is a method to make the defect feature to not spread to all memory thus making it harder to detect between good data and noisy data. By using sparse addressing, data will be concentrated to a select few memory slots and not spread between all memory slots.
+
+Another method is called Trust Region Memory Updates which leverages on 2 key observations, which is defect are rare and the do not always appear in the same memory slot because the proportion of a defect data is significantly smaller than a good data. The other observation is normal data is easier to auto-encoder because it have regularity in appearances.
+
+By using these 2 methods, a defect data can be detected and mitigated, resulting in an improved accuracy even if the dataset have a few defects data.
+
+\section*{AI Standardization and Fair Machine Learning \\ \footnotesize by Prof. Dae-ki Kang, Dongseo University}
+
+\subsection*{GPT-3}
+
+Even though deep learning application have spread far and wide, however there is still a problem of generalization. Namely that, every single deep learning technique that have been developed in the world are only able to do specifically one thing and not the other making it became a specific ML for a specific task. Thats where GPT-3 comes in.
+
+GPT-3 or Generative Pre-Trained Transformer 3 is dubbed as the most excellent AI in human history. As of now, it has 175 billion parameters and every single pre-training would cost 5 million dollars. GPT-3 is an attempt on creating a generalized AI that are able to do basically anything, provided the user fed it with little data to let it learn. There are many application of GPT-3 like random writing, simple web coding from a single given sentence and some simple arithmetic operation.
+
+\subsection*{AI Disfunction}
+
+Many people are still afraid that some day in the near future, AI technology has become so advanced that we will be controlled by machines. The master and the slave role will be reversed and we will become the AI's slaves.
+
+To futher proved their points, there are some accidents caused by an autonomous vehicle like when Tesla's autonomous car crashed into a trailer as its software failed to recognized the side of the trailer and thought it as a sky. On another note, the drive is stil to blame as he is watching a movie at the time of the crash. Another accidents is happened with a google autonomous vehicle having a light contact with a public bus at a speed of \textbf{3.2} km/h.
+
+\subsection*{AI Standardization}
+
+As AI generalization becoming more and more common, AI standardization is becoming more crucial to the world. With a standardization, people will have a base standard to help secure common understanding between AI providers and users and for the industry, a reliability-related standard to identify between social and ethical impact and to establish technical and policy mitigation measures.
+
+One of the example of standardization bodies is ITU-T, IEEE and many more. And of the example of said standardization is on autonomous vehicle levels, in which a car is given a level on how much the car able to operate without the driver interaction.
+
+\subsection*{Needs for Fair AI/Machine Learning}
+
+Depending on the data, an AI can be a cold-hearted machine predicting with no bias at all, or it can be a predicting machine with lots of bias. There are many examples of this, like how Google Photos identified 2 black people as a gorillas, or how criminal justice systems bias agains africans by assigning them with a high risk profile from the get-go.
+
+Based on that, there are a lots academic research and standardization in the work of standardization bodies such as ISO/IEC TR 24028, ISO/IEC TR 24027, ISO/IEC TR 24368.
+
+
+\end{document}
