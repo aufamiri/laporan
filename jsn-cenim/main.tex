@@ -29,17 +29,9 @@
 \section*{Deep Learning with Small Visual Data \\
   \footnotesize by Prof. Kai - Lung Hua, National Taiwan University of Science and Technology}
 
-\subsection*{Defect Detection}
-
 The problem with the current deep learning technique right now is that it is required a lot of image or visual data to function properly and achived the targeted accuracy. This bring about another problem, namely limited memory that the computer has will impact how much data that we are able to feed to the computer.
 
-There are a few things to do to mitigate the short of data while still retaining the targeted accuracy. First, we need to learn the distribution of normal data, this is quite important as a normal data is important on the general prediction of the image. Anything else can be considered defects and will be used to improve resiliency of the model.
-
-An example of this is on defect detection on a photos. One of the biggest problem is the shortage of defect photos in the wild, thus, making the detection is harder than necessary. One of the proposed method by Prof. Kai - Lung Hua is to use a memory to "remember" how is the shape of other normal data and try to fix it using said memory.
-
-While using memory approach has been succesfully improving the accuracy, however on some cases it still not enough. Another technique is called multi-thresholding. This approach is based on the traditional single-thresholding and able to increase the accuracy on detecting the defect on a photos.
-
-\subsection*{Noisy Data Problem}
+An example of this is on defect detection on a photos. One of the biggest problem is the shortage of defect photos in the wild, thus, making the detection is harder than necessary. One of the proposed method by Prof. Kai - Lung Hua is to use a memory to "remember" how is the shape of other normal data and try to fix it using said memory. Another technique is called multi-thresholding. This approach is based on the traditional single-thresholding and able to increase the accuracy on detecting the defect on a photos.
 
 Oftenly, we need to deal with defects data or called noisy data. While this might not be a good thing on an initial training state, however a noise data is needed to improve the resiliency of a model. There are some method to prevent the noisy data from affecting our model such as, Sparse Addressing and Trust Region Memory Updates.
 
@@ -51,29 +43,17 @@ By using these 2 methods, a defect data can be detected and mitigated, resulting
 
 \section*{AI Standardization and Fair Machine Learning \\ \footnotesize by Prof. Dae-ki Kang, Dongseo University}
 
-\subsection*{GPT-3}
-
 Even though deep learning application have spread far and wide, however there is still a problem of generalization. Namely that, every single deep learning technique that have been developed in the world are only able to do specifically one thing and not the other making it became a specific ML for a specific task. Thats where GPT-3 comes in.
 
 GPT-3 or Generative Pre-Trained Transformer 3 is dubbed as the most excellent AI in human history. As of now, it has 175 billion parameters and every single pre-training would cost 5 million dollars. GPT-3 is an attempt on creating a generalized AI that are able to do basically anything, provided the user fed it with little data to let it learn. There are many application of GPT-3 like random writing, simple web coding from a single given sentence and some simple arithmetic operation.
 
-\subsection*{AI Disfunction}
-
 Many people are still afraid that some day in the near future, AI technology has become so advanced that we will be controlled by machines. The master and the slave role will be reversed and we will become the AI's slaves.
-
-To futher proved their points, there are some accidents caused by an autonomous vehicle like when Tesla's autonomous car crashed into a trailer as its software failed to recognized the side of the trailer and thought it as a sky. On another note, the drive is stil to blame as he is watching a movie at the time of the crash. Another accidents is happened with a google autonomous vehicle having a light contact with a public bus at a speed of \textbf{3.2} km/h.
-
-\subsection*{AI Standardization}
 
 As AI generalization becoming more and more common, AI standardization is becoming more crucial to the world. With a standardization, people will have a base standard to help secure common understanding between AI providers and users and for the industry, a reliability-related standard to identify between social and ethical impact and to establish technical and policy mitigation measures.
 
 One of the example of standardization bodies is ITU-T, IEEE and many more. And of the example of said standardization is on autonomous vehicle levels, in which a car is given a level on how much the car able to operate without the driver interaction.
 
-\subsection*{Needs for Fair AI/Machine Learning}
-
-Depending on the data, an AI can be a cold-hearted machine predicting with no bias at all, or it can be a predicting machine with lots of bias. There are many examples of this, like how Google Photos identified 2 black people as a gorillas, or how criminal justice systems bias agains africans by assigning them with a high risk profile from the get-go.
-
-Based on that, there are a lots academic research and standardization in the work of standardization bodies such as ISO/IEC TR 24028, ISO/IEC TR 24027, ISO/IEC TR 24368.
+Depending on the data, an AI can be a cold-hearted machine predicting with no bias at all, or it can be a predicting machine with lots of bias. There are many examples of this, like how Google Photos identified 2 black people as a gorillas, or how criminal justice systems bias agains africans by assigning them with a high risk profile from the get-go. Based on that, there are a lots academic research and standardization in the work of standardization bodies such as ISO/IEC TR 24028, ISO/IEC TR 24027, ISO/IEC TR 24368.
 
 \section*{Evolution of Mobile and Embedded Smart Devices Technology \\ \footnotesize by Alfred Boediman, Ph. D, SRIN}
 
@@ -85,7 +65,7 @@ Now, if we look over on the microcontroller side, there are a few attempts to us
 
 So, what next ? as a leading company on mobile devices in the world, Samsung is always try to innovate, enabling devices to go far beyond a simple classification and try to give a key contributions to the AI technologies.
 
-\section*{Network Virtualization that Make Sense \\ by Winahyu Hadi Utomo, Red Hat}
+\section*{Network Virtualization that Make Sense \\ \footnotesize by Winahyu Hadi Utomo, Red Hat}
 
 Nowadays, virtualization is very important for the internet in general. The so called cloud computing is mostly done by using some level of virtualization and the current most researched topics in the world is a network virtualization. There are a few advantage as to why we try to virtualize the network, such as boost productivity as we are no longer provisioning the network manually, faster application delivery with the same reason above and lastly, reduce the cost because a single network hardware can be used by many users at the same time.
 
@@ -94,5 +74,18 @@ Eventhough virtualization is mostly a good thing, there are some takeaways on us
 On linux, as the leading server OS in the world, there are some attempts already made towards virtualization. For network virtualization there are OVS, Linux Bridge, Network Namespace and VLAN for Network Virtualization. For hardware virtualitation we have got KVM, Xen, Qemu, VirtualBox, and many more. And there is OpenStack to manage the compute, storage and network as a full set of Cloud OS.
 
 As people using more and more of the virtualization, there are some issues found with virtualization, one of the most severe issue is an OS overhead. An OS overhead is a bad thing as the computer or server is basically running 2 OS simultaneously, hogging unnecessary resources and eating more storage than necessary. The way to overcome this is to use containerization. With containerization we don't have to virtualize the entire OS, instead we are using the Host OS and "virtualize" on top of that.
+
+There are a few advantage on containerization over using virtualitation, such as smaller image size, lower system resources usage, faster deployment time and lastly, easier to update.
+
+\section*{Contribution of ML in Brain Disease Classification \\ \footnotesize by Dr. I Ketut Eddy Purnama, ITS }
+
+As a human, we always try to gain a deeper understanding of ourselves, and brain as a crucial part of a human body is no exception. A brain disease, something that scares us as it is haunting our most precious assets is always something to be researched at. Today, a doctor can discern what kind of disease or abnormality within our brain by see our MRI scan.
+
+MRI is magnetic resonance imagingk used to see the inside of our body. Unlike X-Rays and CT Scans, an MRI didn't use the damaging ionizing radiation of X-Rays and instead using an array of powerul magnet and coils to picture the inside of our body. For the same reason, an MRI is safer to use on a brain rather than other type of body imaging.
+
+If a doctor able to classify what kind of illness might there be inside our brain, a computer equipped with a classifier type machine learning should be able to do the same and maybe more, as a computer don't have to feel tired and able to process lots of images on one day.
+
+There are a lot of research already done on this subjects, one of them is by Bahadure et al., at 2017. The topics is about Image Analysis for MRI Based Brain Tumor Detection and Feature Extraction using Biologically Inspired BWT and SVM. Said detection able to reach the accuracy of 96\%. Another example is a topic by Vijay Kumar et al. at 2019 under the title of Brain Tumor MRI Segmentation and Classification using Ensemble Classifier. This topic has been succesully reach the accuracy of 91.7\%.
+
 
 \end{document}
