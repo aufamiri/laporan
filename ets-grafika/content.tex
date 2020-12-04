@@ -1,0 +1,140 @@
+\section{File HTML}
+
+\subsection*{Setup Canvas}
+
+\begin{lstlisting}[language=html, label={lst: indexHtml}, caption={file index.html}]
+<html lang="en">
+  <head>
+    <title>ETS</title>
+    <meta charset="utf-8" />
+  </head>
+  <body onload="startup();">
+    <canvas id="canvas" width="500" height="500"></canvas>
+
+    <div style="position: absolute; top: 550px; color: black; z-index: 10">
+      Keyboard:
+      <ul>
+        <li>W untuk maju</li>
+        <li>S untuk mundul</li>
+        <li>D untuk rotate ke kanan</li>
+        <li>A untuk rotate ke kiri</li>
+        <li>panah atas untuk ke atas (max. 20)</li>
+        <li>panah bawah untuk ke bawah (min.0)</li>
+      </ul>
+    </div>
+    
+\end{lstlisting}
+
+Melakukan inisiasi \textit{canvas} pada html dengan cara melakukan \lstinline[language=html]{<canvas id="canvas" width="500" height="500"></canvas>}. Selain itu, juga dilakukan pemanggilan fungsi \texttt{startup()} pada saat file html sudah terload sepenuhnya.
+
+\subsection*{Setup Vertex Shader}
+
+\begin{lstlisting}[language=html, label={lst: vertexShader}, caption={file vertexShader}]
+    <script id="vs-src" type="x-shader/x-vertex">
+      attribute vec3 aVertexPosition;
+      attribute vec4 aVertexColor;
+
+      uniform mat4 uModelViewMatrix;
+      uniform mat4 uProjectionMatrix;
+
+      varying vec4 vColor;
+
+      void main(void) {
+          gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aVertexPosition, 1.0);
+          vColor = aVertexColor;
+      }
+    </script>
+
+\end{lstlisting}
+
+Nantinya, setiap vertex yang dikirimkan ke vertexShader akan dikalikan dengan \texttt{uProjectionMatrix} yang digunakan untuk memposisikan menentukan bagaimana behaviour "kamera" dalam scene. Selanjutnya, akan mengalami proses perkalian dengan \texttt{uModelViewMatrix} yang berfungsi untuk menentukan lokasi model dalam koordinat global.
+
+\subsection*{Setup Fragment Shader}
+
+\begin{lstlisting}[language=html, label={lst: fragmentShader}, caption={file fragmentShader}]
+    <script id="fs-src" type="x-shader/x-fragment">
+      precision mediump float;
+
+      varying vec4 vColor;
+
+      void main(void) {
+          gl_FragColor = vColor;
+      }
+    </script>
+
+\end{lstlisting}
+
+FragmentShader akan digunakan untuk menentukan warna model yang akan ditampilkan di layar.
+
+\subsection*{Load Script yang Dibutuhkan}
+
+\begin{lstlisting}[language=html, label={lst: neccessary script}, caption={file Load Script}]
+    <script src="gl-matrix-min.js"></script>
+    <script type="text/javascript" src="utils.js"></script>
+    <script type="text/javascript" src="initShader.js"></script>
+    <script type="text/javascript" src="index.js"></script>
+  </body>
+</html>
+\end{lstlisting}
+
+Disini dilakukan beberapa load script - script yang akan digunakan dalam program nantinya. \texttt{gl-matrix-min.js} digunakan untuk mempermudah penghitungan matrix orde 3 dan 4 yang akan digunakan saat melakukan animasi. \texttt{utils.js} berisi beberapa fungsi penting seperti \texttt{loadWebglContext} yang digunakan untuk mendapatkan context webGL sebelum kita dapat menampilkan objek apapun. \texttt{initShader.js} digunakan untuk melakukan compile terhadap vertexShader dan fragmentShader. Dan \texttt{index.js} merupakan file utama yang paling penting karena berisi merupakan tempat fungsi \texttt{startup} berada
+
+\section{File Utils.js}
+
+Terdapat beberapa fungsi penting di file \texttt{utils.js} ini,
+
+\begin{itemize}
+    \item \textbf{createGLContext}
+
+          Berfungsi untuk mendapatkan webGL context yang akan dipakai di seluruh bagian \texttt{index.js} nantinya.
+
+    \item \textbf{getShaderfromDOM}
+
+          Mendapatkan ShaderSource baik itu adalah vertexShader maupun fragmentShader dari file \texttt{index.html} yang sudah dibuat sebelumnya.
+
+    \item \textbf{createSphere}
+
+          Menghitung vertex yang akan digunakan untuk membentuk suatu model sphere.
+
+
+          \begin{lstlisting}[language=javascript, label={lst: createSphere}, caption={fungsi createSphere}]
+function createSphere(div, color) {
+  var positions = [];
+  for (var i = 0; i <= div; ++i) {
+    var ai = (i * Math.PI) / div;
+    var si = Math.sin(ai);
+    var ci = Math.cos(ai);
+    for (var j = 0; j <= div; ++j) {
+      var aj = (j * 2 * Math.PI) / div;
+      var sj = Math.sin(aj);
+      var cj = Math.cos(aj);
+      positions = positions.concat([si * sj, ci, si * cj]);
+    }
+  }
+
+  var indices = [];
+  for (var i = 0; i < div; ++i) {
+    for (var j = 0; j < div; ++j) {
+      var p1 = i * (div + 1) + j;
+      var p2 = p1 + (div + 1);
+      indices = indices.concat([p1, p2, p1 + 1, p1 + 1, p2, p2 + 1]);
+    }
+  }
+
+  var colors = [];
+  for (var i = 0; i != indices.length; i++) {
+    colors = colors.concat(color);
+  }
+
+  return {
+    vertexData: positions,
+    indices: indices,
+    colors: colors,
+  };
+}
+
+\end{lstlisting}
+
+\end{itemize}
+
+\section{File initShader.js}

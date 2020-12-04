@@ -1,6 +1,40 @@
 \documentclass[12pt, a4paper]{article}
 \usepackage{graphicx}
 \usepackage[hidelinks]{hyperref}
+\usepackage[indonesian]{babel}
+
+% Pengaturan format baris program
+\usepackage{listings}
+\usepackage{color}
+\definecolor{comment}{RGB}{0,128,0}
+\definecolor{string}{RGB}{255,0,0}
+\definecolor{keyword}{RGB}{0,0,255}
+\lstdefinestyle{codestyle}{
+	commentstyle=\color{comment},
+	stringstyle=\color{string},
+	keywordstyle=\color{keyword},
+	basicstyle=\footnotesize\ttfamily,
+	numbers=left,
+	numberstyle=\tiny,
+	numbersep=5pt,
+	frame=lines,
+	breaklines=true,
+	prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+	showstringspaces=false,
+	upquote=true,
+	tabsize=2,
+}
+\lstset{style=codestyle}
+
+\lstdefinelanguage{JavaScript}{
+  keywords={break, case, catch, continue, debugger, default, delete, do, else, finally, for, function, if, in, instanceof, new, return, switch, this, throw, try, typeof, var, void, while, with},
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  sensitive=true
+}
+
 
 \renewcommand{\figurename}{Gambar}
 
@@ -8,6 +42,6 @@
 
 \input{cover.tex}
 
-\input{grafika/content.tex}
+\input{ets-grafika/content.tex}
 
 \end{document}
