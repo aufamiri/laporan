@@ -84,20 +84,20 @@ Disini dilakukan beberapa load script - script yang akan digunakan dalam program
 Terdapat beberapa fungsi penting di file \texttt{utils.js} ini,
 
 \begin{itemize}
-    \item \textbf{createGLContext}
+  \item \textbf{createGLContext}
 
-          Berfungsi untuk mendapatkan webGL context yang akan dipakai di seluruh bagian \texttt{index.js} nantinya.
+        Berfungsi untuk mendapatkan webGL context yang akan dipakai di seluruh bagian \texttt{index.js} nantinya.
 
-    \item \textbf{getShaderfromDOM}
+  \item \textbf{getShaderfromDOM}
 
-          Mendapatkan ShaderSource baik itu adalah vertexShader maupun fragmentShader dari file \texttt{index.html} yang sudah dibuat sebelumnya.
+        Mendapatkan ShaderSource baik itu adalah vertexShader maupun fragmentShader dari file \texttt{index.html} yang sudah dibuat sebelumnya.
 
-    \item \textbf{createSphere}
+  \item \textbf{createSphere}
 
-          Menghitung vertex yang akan digunakan untuk membentuk suatu model sphere.
+        Menghitung vertex yang akan digunakan untuk membentuk suatu model sphere.
 
 
-          \begin{lstlisting}[language=javascript, label={lst: createSphere}, caption={fungsi createSphere}]
+        \begin{lstlisting}[language=javascript, label={lst: createSphere}, caption={fungsi createSphere}]
 function createSphere(div, color) {
   var positions = [];
   for (var i = 0; i <= div; ++i) {
@@ -138,3 +138,56 @@ function createSphere(div, color) {
 \end{itemize}
 
 \section{File initShader.js}
+
+File ini digunakan untuk melakukan load terhadap shader dari ShaderSource menjadi WebGLProgram. fungsi \texttt{loadShader} merupakan fungsi untuk melakukan compile shaderSource untuk kemudian agar bisa dilakukan \texttt{gl.attachShader} dalam webGL. Berikut adalah salah satu fungsi yang ada di file \texttt{initShader.js}.
+
+
+\begin{lstlisting}[language=javascript, label={lst: setupShader}, caption={fungsi setupShader}]
+function setupShaders(gl, vertexSource, fragmentSource) {
+  var vertextShader = loadShader(gl, gl.VERTEX_SHADER, vertexSource);
+  var fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
+
+  shaderProgram = gl.createProgram();
+  gl.attachShader(shaderProgram, vertextShader);
+  gl.attachShader(shaderProgram, fragmentShader);
+  gl.linkProgram(shaderProgram);
+
+  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+    console.error("failed to setup shaders");
+  }
+
+  return shaderProgram;
+}
+
+\end{lstlisting}
+
+\section{File index.js}
+
+File ini adalah backbone utama dari project WebGL ini, berisi konfigurasi viewport webgl, object modelling, object animation dan banyak lagi.
+
+\subsection*{data planet}
+
+Untuk memudahkan dalam pengembangan, saya memutuskan untuk menyatukan konfigurasi planet - planet yang akan di render dalam scene. Dengan cara memisahkan antara konfigurasi planet dengan cara menggambar nantinya akan memudahkan saat proses debugging.
+
+\begin{lstlisting}[language=javascript, label={lst: dataPlanet}, caption={list data planet}]
+  {
+    color: [1, 0.97, 0.19, 1.0],
+    translation: [0, 0, 0],
+    rotation: 0.01,
+    scale: 1,
+    hasChild: true,
+    parentId: -1,
+  }
+  
+\end{lstlisting}
+
+Potongan kode \ref{lst: dataPlanet} adalah salah satu data planet yang digunakan, untuk keterangannya adalah :
+
+\begin{itemize}
+  \item \textbf{color}, menyimpan value warna planet
+  \item \textbf{translation}, menyimpan lokasi koordinat lokal planet
+  \item \textbf{rotation}, kecepatan rotasi dan kecepatan planet memutari parentnya
+  \item \textbf{scale}, ukuran planet, hal ini karena fungsi \texttt{createSphere} di potongan kode \ref{lst: createSphere} hanya membuat sphere dengan ukuran radius 1.0.
+  \item \textbf{hasChild}, sebuah boolean value untuk menunjukkan apakah suatu planet memiliki child dalam hierarki
+  \item \textbf{parentId}, menyimpan id parent yang akan digunakan dalam hierarki
+\end{itemize}
