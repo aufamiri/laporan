@@ -191,3 +191,207 @@ Potongan kode \ref{lst: dataPlanet} adalah salah satu data planet yang digunakan
   \item \textbf{hasChild}, sebuah boolean value untuk menunjukkan apakah suatu planet memiliki child dalam hierarki
   \item \textbf{parentId}, menyimpan id parent yang akan digunakan dalam hierarki
 \end{itemize}
+
+\subsection*{object anim}
+
+Saya memutuskan untuk menggunakan objek anim untuk menghindari penggunaan global variabel dalam script.
+
+\begin{lstlisting}[language=javascript, label={lst: objekAnim}, caption={objek anim}]
+var anim = {
+  prevModelView: [],
+  camLocation: [0, -10, 0],
+  povLoc: [0, 0, 0],
+
+  render: function () {
+    anim.gl.viewport(0, 0, anim.canvas.width, anim.canvas.height);
+    anim.gl.clear(anim.gl.COLOR_BUFFER_BIT | anim.gl.DEPTH_BUFFER_BIT);
+
+    //reset prevModelVIew
+    anim.prevModelView = [];
+
+    for (var i = 0; i != objectArray.length; i++) {
+      drawAttr(
+        anim.gl,
+        new Float32Array(objectArray[i].object.vertexData),
+        3,
+        anim.programInfo.attr.vertexPostition
+      );
+
+      drawAttr(
+        anim.gl,
+        new Float32Array(objectArray[i].object.colors),
+        4,
+        anim.programInfo.attr.color
+      );
+
+      drawIndices(anim.gl, objectArray[i].object.indices);
+
+      tempTranslate = animate(
+        anim.gl,
+        anim.canvas,
+        anim.programInfo.uniform,
+        objectArray[i].object.indices.length,
+        objectArray[i].currentRotation,
+        objectArray[i].scale,
+        objectArray[i].translation,
+        anim.prevModelView[objectArray[i].parentId],
+        anim.camLocation,
+        anim.povLoc
+      );
+
+      if (objectArray[i].hasChild) {
+        anim.prevModelView.push(tempTranslate);
+      }
+
+      objectArray[i].currentRotation =
+        objectArray[i].currentRotation + objectArray[i].deltaRotation;
+    }
+
+    window.requestAnimationFrame(this.render);
+  },
+};
+  
+\end{lstlisting}
+
+Seperti bisa dilihat di potongan kode \ref{lst: objekAnim}, terdapat beberapa variabel penting yang disimpan dalam objek tersebut, seperti :
+
+\begin{itemize}
+  \item  \textbf{prevModelView}, menyimpan modelView parent yang nantinya akan dimasukkan ke dalam penghitungan modelViewMatrix para child
+  \item \textbf{camLocation}, berisi koordinat posisi kamera, akan digunakan saat memasukkan value lookAt
+  \item \textbf{povLoc}, titik yang "dilihat" oleh kamera
+  \item \textbf{gl}, menyimpan referensi WebGLRenderingContext
+  \item \textbf{canvas}, berisi HTMLCanvasElement
+  \item \textbf{render}, sebuah fungsi untuk melakukan setup webGL attribute (avertexPosition dan aVertexColor), setup indices yang digunakan saat proses draw, memasukkan modelView parent ke dalam prevModelParent, mengatur rotasi dan memanggil fungsi \texttt{animate}.
+\end{itemize}
+
+\subsection*{fungsi Animate}
+
+Dalam project ini, terdapat beberapa step dalam melakukan animasi. Yang pertama adalah mengatur \texttt{projectionMatrix}, dilanjutkan dengan mengatur \texttt{modelViewMatrix} dan terakhir melakukan draw model ke canvas.
+
+\begin{lstlisting}[language=javascript, label={lst: projectionMatrix}, caption={mengatur projectionMatrix}]
+//projection View Matrix
+const fieldOfView = (45 * Math.PI) / 180; //45 degree angle
+const aspect = canvas.clientWidth / canvas.clientHeight;
+const projectionMatrix = mat4.create();
+mat4.perspective(projectionMatrix, fieldOfView, aspect, 0.1, 100.0);
+
+\end{lstlisting}
+
+Potongan kode \ref{lst: projectionMatrix} digunakan untuk mengatur bentuk projectionMatrix dari koordinat dunia menjadi koordinat dalam viewport. Disini saya hanya merubah dari default projection, yaitu orthographic menjadi perspective.
+
+\begin{lstlisting}[language=javascript, label={lst: modelViewMatrix}, caption={mengatur modelViewMatrix}]
+//ModelView Matrix
+var modelViewMatrix = mat4.create();
+
+if (prevModelView != undefined) {
+  modelViewMatrix = mat4.clone(prevModelView);
+} else {
+  mat4.lookAt(modelViewMatrix, camLocation, POVLoc, [0, 0, 1]);
+}
+
+mat4.scale(modelViewMatrix, modelViewMatrix, [scale, scale, scale]);
+mat4.rotate(modelViewMatrix, modelViewMatrix, rotate, [0, 0, 1]);
+mat4.translate(
+  modelViewMatrix, // destination matrix
+  modelViewMatrix, // matrix to translate
+  translate
+);
+\end{lstlisting}
+
+Potongan kode \ref{lst: modelViewMatrix} digunakan untuk menghitung modelViewMatrix yang digunakan untuk mengubah dari koordinat lokal menjadi koordinat dunia.
+
+\texttt{mat4.lookAt} hanya di apply pada model yang paling atas dalam hierarki, yaitu planet matahari, sedangkan sisa planet akan menggunakan hasil penghitungan modelViewMatrix dari matahari sehingga pada akhirnya ikut terpengaruh oleh \texttt{lookAt}.
+
+Untuk transformasi yang dilakukan terhadap model, yang pertama adalah melakukan scale agar memiliki scale yang sesuai dengan data yang sudah di set sebelumnya, dilanjutkan dengan melakukan rotasi. Hasil dari rotasi tersebut akan dilakukan translasi sehingga planet tampak memutari koordinat pusat, yaitu [0,0]
+
+\begin{lstlisting}[language=javascript, label={lst: drawUniform}, caption={draw}]
+drawUniform(gl, uniformLocation.projection, projectionMatrix);
+drawUniform(gl, uniformLocation.modelView, modelViewMatrix);
+
+gl.drawElements(gl.TRIANGLES, vertexLength, gl.UNSIGNED_SHORT, 0);
+
+return modelViewMatrix;
+\end{lstlisting}
+
+Terakhir tinggal melakukan setup uniform ke webGL dan melakukan \texttt{drawElement} untuk melakukan render model ke viewport.
+
+\subsection*{fungsi onKeyUp}
+
+fungsi ini digunakan untuk memproses event keypress oleh user sehingga menambah interaktifitas dalam model - model planet.
+
+\begin{lstlisting}[language=javascript, label={lst: onKeyUp}, caption={fungsi onKeyUp}]
+function onKeyUp(event) {
+  const defaultJump = 5;
+
+  if (event.keyCode == 38 && anim.camLocation[2] <= 20) {
+    anim.camLocation[2] += defaultJump;
+  }
+  if (event.keyCode == 40 && anim.camLocation[2] >= 0) {
+    anim.camLocation[2] -= defaultJump;
+  }
+
+  if (event.keyCode == 87 && anim.camLocation[1] <= 20) {
+    anim.camLocation[1] += defaultJump;
+  }
+  if (event.keyCode == 83 && anim.camLocation[1] >= -30) {
+    anim.camLocation[1] -= defaultJump;
+  }
+
+  if (event.keyCode == 68) {
+    anim.povLoc[0] += defaultJump / 2;
+  }
+  if (event.keyCode == 65) {
+    anim.povLoc[0] -= defaultJump / 2;
+  }
+}
+
+\end{lstlisting}
+
+Beberapa tombol yang dapat digunakan adalah :
+
+\begin{itemize}
+  \item \textbf{keycode 38 atau panah atas,}
+
+        Digunakan menambah ukuran Z axis pada lokasi kamera, sehingga kamera menjadi diatas model planet. Sengaja dibatasi karena apabila value Z melewati titik tertentu, objek menjadi tampak aneh sebelum akhirnya menghilang karena terlalu kecil.
+
+  \item \textbf{keycode 40 atau panah bawah,}
+
+        sama seperti diatas, digunakan untuk mengurangi ukuran Z akis pada lokasi kamera.
+
+  \item \textbf{keycode 87 atau "w",}
+
+        Digunakan untuk membuat kamera maju dengan cara menambah value Y axis pada lokasi kamera. Pembatasan value dilakukan agar kamera planet - planet masih dapat terlihat.
+
+  \item \textbf{keycode 83 atau "s",}
+
+        Sama seperti diatas, digunakan untuk membuat kamera mundur dengan cara mengurangi value Y axis pada lokasi kamera.
+
+  \item \textbf{keycode 68 atau "d",}
+
+        Digunakan untuk merubah koordinat yang dilihat oleh kamera kearah kanan. Memberikan efek rotasi pada kamera.
+
+  \item \textbf{keycode 65 atau "a",}
+
+        Digunakan untuk merubah koordinat yang dilihat oleh kamera kearah kiri. Memberikan efek rotasi pada kamera.
+
+\end{itemize}
+
+\subsection*{Fungsi Startup}
+
+Adalah fungsi yang pertama kali dipanggil saat dokumen html selesai di load oleh browser,  Salah satu yang penting adalah melakukan setup agar program dapat menangkap keyboard press.
+
+\begin{lstlisting}[language=javascript, label={lst: eventListener}, caption={mengatur eventListener}]
+  document.addEventListener("keydown", onKeyUp, true);
+
+  /** .. */
+
+  gl.clearColor(102 / 255, 153 / 255, 1.0, 1.0);
+  gl.enable(gl.DEPTH_TEST);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+\end{lstlisting}
+
+Selain itu, juga terdapat fungsi webGL untuk mengatur warna background dan viewport. Tidak kalah penting adalah menyalakan fitur Hidden Surface Removal agar objek yang tertutupi oleh objek lain akan menjadi tidak tampak dengan cara \lstinline[language=javascript]{gl.enable(gl.DEPTH_TEST);}.
+
+\section*{URL Demo dan Source Code}
+Seluruh source code dalam project ini dapat diakses dalam repository github saya, yaitu \url{https://github.com/chillytaka/webGL/tree/master/ets}, sedangkan untuk demo, dapat diakses di \url{https://chillytaka.github.io/webGL/ets/index.html}. Selain itu, juga terdapat daftar dari projek - projek webGL yang lain yang dapat diakses di \url{https://chillytaka.github.io/webGL/}
