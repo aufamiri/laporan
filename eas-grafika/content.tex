@@ -1,0 +1,355 @@
+\section{File HTML}
+
+\subsection*{Setup Canvas}
+
+\begin{lstlisting}[language=html, label={lst: indexHtml}, caption={file index.html}]
+<html lang="en">
+  <head>
+    <title>ETS</title>
+    <meta charset="utf-8" />
+  </head>
+  <body onload="startup();">
+    <canvas id="canvas" width="500" height="500"></canvas>
+    
+\end{lstlisting}
+
+Melakukan inisiasi \textit{canvas} pada html dengan cara melakukan \lstinline[language=html]{<canvas id="canvas" width="500" height="500"></canvas>}. Selain itu, juga dilakukan pemanggilan fungsi \texttt{startup()} pada saat file html sudah terload sepenuhnya.
+
+\subsection*{Setup Vertex Shader}
+
+\begin{lstlisting}[language=html, label={lst: vertexShader}, caption={file vertexShader}]
+    <script id="vs-src" type="x-shader/x-vertex">
+      attribute vec3 aVertexPosition;
+      attribute vec3 aVertexNormal;
+
+      uniform mat4 uModelViewMatrix;
+      uniform mat4 uProjectionMatrix;
+      uniform mat4 uNormalViewMatrix;
+      uniform vec4 uLightPosition;
+
+      varying vec3 L, N, E;
+
+      void main(void) {
+        vec3 pos = (uModelViewMatrix * vec4(aVertexPosition, 1.0)).xyz;
+        vec3 lightPos = (uNormalViewMatrix * uLightPosition).xyz;
+
+        L = normalize(lightPos - pos);
+        N = normalize((uModelViewMatrix * vec4(aVertexNormal,1.0)).xyz);
+        E = -normalize(pos);
+
+        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aVertexPosition, 1.0);
+      }
+    </script>
+
+\end{lstlisting}
+
+mirip seperti assignment sebelumnya, terdapat projectionMatrix, dan ModelViewMatrix. kedua matrix tersebut digunakan untuk melakukan rotasi kepada objek. Variabel \texttt{pos} digunakan untuk menyimpan posisi koordinat objek tanpa perspektif kamera dan \texttt{lightPost} adalah posisi sumber cahaya dalam kamera.
+
+Variabel \texttt{L} adalah vektor arah cahaya, yang perlu dilakukan adalah melakukan normalisasi hasil dari pengurangan posisi cahaya dengan posisi objek sehingga cahaya menyinari objek tersebut. \texttt{N} adalah vektor normal objek, vektor normal ini ikut berubah posisinya mengikuti vertex objek. \texttt{E} adalah arah kamera. Karena kamera dianggap berada pada titik (0,0), arah kamera ini hanyalah normalisasi dari koordinat objek.
+
+\subsection*{Setup Fragment Shader}
+
+\begin{lstlisting}[language=html, label={lst: fragmentShader}, caption={file fragmentShader}]
+    <script id="fs-src" type="x-shader/x-fragment">
+      precision mediump float;
+      varying vec3 L, N, E;
+
+      uniform vec4 ambientProduct;
+      uniform vec4 diffuseProduct;
+      uniform vec4 specularProduct;
+      uniform float shininess;
+
+      void main()
+      {
+        vec4 diffuse = max(dot(L, N), 0.0) * diffuseProduct;
+        vec3 H = normalize(L+E);
+        vec4 specular = pow(max(dot(N, H), 0.0), shininess) * specularProduct;
+
+        if (dot(L, N) < 0.0)
+          specular = vec4(0.0, 0.0, 0.0, 1.0);
+
+        vec4 fColor = ambientProduct + diffuse + specular;
+        fColor.a = 1.0;
+
+        gl_FragColor = fColor;
+      }
+    </script>
+
+\end{lstlisting}
+
+Disini fragmentShader mengatur warna dengan melihat posisi dan arah cahaya dan sifat material. \texttt{Diffuse} adalah warna utama yang akan ditampilkan oleh objek saat terkena cahaya. Nilai minimal dari \texttt{diffuse} adalah 0 karena apabila nilai tersebut kurang dari 0, berarti cahaya berada di belakang bidang, yang mana juga sama - sama berarti gelap.
+
+Untuk melakukan penghitungan specular, karena implementasi yang dipilih adalah Phong shader dengan variasi Blinn, terdapat tambahan penghitungan untuk mencari jarak tengah antara vektor arah kamera dengan vektor arah cahaya. Variabel \texttt{H} digunakan untuk menyimpan jarak tengah tersebut. Specular sendiri dihitung dengan cara melakukan normalisasi antara vektor normal dengan \texttt{H} dan dipangkatkan dengan banyaknya \texttt{shininess} yang dibutuhkan.
+
+Untuk memudahkan penghitungan di GPU, yang diinputkan bukan merupakan besaran sifat - sifat Light dan Materialnya, tapi sudah merupakan hasil perkalian dari kedua sifat tersebut.
+
+\subsection*{Load Script yang Dibutuhkan}
+
+\begin{lstlisting}[language=html, label={lst: neccessary script}, caption={file Load Script}]
+    <script src="gl-matrix-min.js"></script>
+    <script type="text/javascript" src="utils.js"></script>
+    <script type="text/javascript" src="initShader.js"></script>
+    <script type="text/javascript" src="index.js"></script>
+  </body>
+</html>
+\end{lstlisting}
+
+Disini dilakukan beberapa load script - script yang akan digunakan dalam program nantinya. \texttt{gl-matrix-min.js} digunakan untuk mempermudah penghitungan matrix orde 3 dan 4 yang akan digunakan saat melakukan animasi. \texttt{utils.js} berisi beberapa fungsi penting seperti \texttt{loadWebglContext} yang digunakan untuk mendapatkan context webGL sebelum kita dapat menampilkan objek apapun. \texttt{initShader.js} digunakan untuk melakukan compile terhadap vertexShader dan fragmentShader. Dan \texttt{index.js} merupakan file utama yang paling penting karena berisi merupakan tempat fungsi \texttt{startup} berada
+
+\section{File Utils.js}
+
+Terdapat beberapa fungsi penting di file \texttt{utils.js} ini,
+
+\begin{itemize}
+  \item \textbf{createGLContext}
+
+        Berfungsi untuk mendapatkan webGL context yang akan dipakai di seluruh bagian \texttt{index.js} nantinya.
+
+  \item \textbf{getShaderfromDOM}
+
+        Mendapatkan ShaderSource baik itu adalah vertexShader maupun fragmentShader dari file \texttt{index.html} yang sudah dibuat sebelumnya.
+
+  \item \textbf{createPyramid}
+
+        Menghitung vertex, indices, dan normal yang akan digunakan untuk membentuk suatu model pyramid.
+
+
+        \begin{lstlisting}[language=javascript, label={lst: createSphere}, caption={fungsi createPyramid}]
+function createPyramid() {
+  //prettier-ignore
+  const positions = [
+
+  // Bottom face
+  -1.0, -1.0, -1.0,
+   1.0, -1.0, -1.0,
+   1.0, -1.0,  1.0,
+  -1.0, -1.0,  1.0,
+
+   0.0,  1.5,  0.0
+  ]
+
+  //prettier-ignore
+  const indices = [
+    0,  1,  2,      0,  2,  3,    // front
+    0,  1,  4,      2,  3,  4,    // back
+    0,  3,  4,      1,  2,  4,   // top
+  ];
+
+  var normal = [];
+
+  for (i = 0; i <= indices.length - 3; i += 3) {
+    a = indices[i] * 3;
+    b = indices[i + 1] * 3;
+    c = indices[i + 2] * 3;
+
+    p1 = vec3.fromValues(positions[a], positions[a + 1], positions[a + 2]);
+    p2 = vec3.fromValues(positions[b], positions[b + 1], positions[b + 2]);
+    p3 = vec3.fromValues(positions[c], positions[c + 1], positions[c + 2]);
+
+    t1 = vec3.create();
+    t2 = vec3.create();
+    result = vec3.create();
+
+    vec3.subtract(t1, p2, p1);
+    vec3.subtract(t2, p3, p1);
+
+    vec3.cross(result, t1, t2);
+    vec3.normalize(result, result);
+
+    normal = normal.concat([result[0], result[1], result[2]]);
+  }
+
+  return {
+    vertexData: positions,
+    indices: indices,
+    normal: normal,
+  };
+
+\end{lstlisting}
+
+\end{itemize}
+
+\section{File initShader.js}
+
+File ini digunakan untuk melakukan load terhadap shader dari ShaderSource menjadi WebGLProgram. fungsi \texttt{loadShader} merupakan fungsi untuk melakukan compile shaderSource untuk kemudian agar bisa dilakukan \texttt{gl.attachShader} dalam webGL. Berikut adalah salah satu fungsi yang ada di file \texttt{initShader.js}.
+
+
+\begin{lstlisting}[language=javascript, label={lst: setupShader}, caption={fungsi setupShader}]
+function setupShaders(gl, vertexSource, fragmentSource) {
+  var vertextShader = loadShader(gl, gl.VERTEX_SHADER, vertexSource);
+  var fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
+
+  shaderProgram = gl.createProgram();
+  gl.attachShader(shaderProgram, vertextShader);
+  gl.attachShader(shaderProgram, fragmentShader);
+  gl.linkProgram(shaderProgram);
+
+  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+    console.error("failed to setup shaders");
+  }
+
+  return shaderProgram;
+}
+
+\end{lstlisting}
+
+\section{File index.js}
+
+File ini adalah backbone utama dari project WebGL ini, berisi konfigurasi viewport webgl, object modelling, object animation dan banyak lagi.
+
+\subsection*{object anim}
+
+Saya memutuskan untuk menggunakan objek anim untuk menghindari penggunaan global variabel dalam script.
+
+\begin{lstlisting}[language=javascript, label={lst: objekAnim}, caption={objek anim}]
+
+var anim = {
+  camLocation: [4, 0, 0],
+  povLoc: [0, 0, 0],
+
+  render: function () {
+    anim.gl.viewport(0, 0, anim.canvas.width, anim.canvas.height);
+    anim.gl.clear(anim.gl.COLOR_BUFFER_BIT | anim.gl.DEPTH_BUFFER_BIT);
+
+    drawAttr(
+      anim.gl,
+      new Float32Array(objectArray.object.vertexData),
+      3,
+      anim.programInfo.attr.vertexPostition
+    );
+
+    drawAttr(
+      anim.gl,
+      new Float32Array(objectArray.object.normal),
+      // objectArray.object.normal,
+      3,
+      anim.programInfo.attr.normal
+    );
+
+    drawIndices(anim.gl, objectArray.object.indices);
+
+    tempTranslate = animate(
+      anim.gl,
+      anim.canvas,
+      anim.programInfo.uniform,
+      objectArray.object.indices.length,
+      objectArray.currentRotation,
+      anim.camLocation,
+      anim.povLoc
+    );
+
+    objectArray.currentRotation =
+      objectArray.currentRotation + objectArray.deltaRotation;
+
+    window.requestAnimationFrame(this.render);
+  },
+};
+
+  
+\end{lstlisting}
+
+Seperti bisa dilihat di potongan kode \ref{lst: objekAnim}, terdapat beberapa variabel penting yang disimpan dalam objek tersebut, seperti :
+
+\begin{itemize}
+  \item \textbf{camLocation}, berisi koordinat posisi kamera, akan digunakan saat memasukkan value lookAt
+  \item \textbf{povLoc}, titik yang "dilihat" oleh kamera
+  \item \textbf{gl}, menyimpan referensi WebGLRenderingContext
+  \item \textbf{canvas}, berisi HTMLCanvasElement
+  \item \textbf{render}, sebuah fungsi untuk melakukan setup webGL attribute (avertexPosition dan aVertexNormal), setup indices yang digunakan saat proses draw, mengatur rotasi dan memanggil fungsi \texttt{animate}.
+\end{itemize}
+
+\subsection*{fungsi Animate}
+
+Dalam project ini, terdapat beberapa step dalam melakukan animasi. Yang pertama adalah mengatur \texttt{projectionMatrix}, dilanjutkan dengan mengatur \texttt{modelViewMatrix}, disambung dengan menghitung product hasil pencahayaan dan terakhir melakukan draw model ke canvas.
+
+\begin{lstlisting}[language=javascript, label={lst: projectionMatrix}, caption={mengatur projectionMatrix}]
+//projection View Matrix
+const fieldOfView = (45 * Math.PI) / 180; //45 degree angle
+const aspect = canvas.clientWidth / canvas.clientHeight;
+const projectionMatrix = mat4.create();
+mat4.perspective(projectionMatrix, fieldOfView, aspect, 0.1, 100.0);
+
+\end{lstlisting}
+
+Potongan kode \ref{lst: projectionMatrix} digunakan untuk mengatur bentuk projectionMatrix dari koordinat dunia menjadi koordinat dalam viewport. Disini saya hanya merubah dari default projection, yaitu orthographic menjadi perspective.
+
+\begin{lstlisting}[language=javascript, label={lst: modelViewMatrix}, caption={mengatur modelViewMatrix}]
+//ModelView Matrix
+  var modelViewMatrix = mat4.create();
+
+  mat4.lookAt(modelViewMatrix, camLocation, POVLoc, [0, 1, 0]);
+
+  var normalViewMatrix = mat4.clone(modelViewMatrix);
+
+  mat4.rotate(modelViewMatrix, modelViewMatrix, rotate, [0, 1, 0]);
+
+\end{lstlisting}
+
+Potongan kode \ref{lst: modelViewMatrix} digunakan untuk menghitung modelViewMatrix yang digunakan untuk mengubah dari koordinat lokal menjadi koordinat dunia. \texttt{normalViewMatrix} dibutuhkan karena dalam penghitungan, posisi cahaya tidak ikut berputar mengikuti objek.
+
+\begin{lstlisting}[language=javascript, label={lst: lightingProduct}, caption={mengatur pencahayaan}]
+//lighting...
+  var ambientProduct = vec4.create();
+  vec4.multiply(ambientProduct, lightAmbient, materialAmbient);
+
+  var diffuseProduct = vec4.create();
+  vec4.multiply(diffuseProduct, lightDiffuse, materialDiffuse);
+
+  var specularProduct = vec4.create();
+  vec4.multiply(specularProduct, lightSpecular, materialSpecular);
+
+\end{lstlisting}
+
+potongan kode \ref{lst: lightingProduct} digunakan agar penghitungan product, tidak menggunakan GPU tapi masih berada dalam CPU, diharapkan dengan melakukan penghitungan di CPU, dapat lebih meningkatkan FPS dalam render.
+
+\begin{lstlisting}[language=javascript, label={lst: movingLight}, caption={mengatur posisi sumber cahaya}]
+  if (isFlip === true) {
+    lightPosition[0] += 0.05;
+  } else {
+    lightPosition[0] -= 0.05;
+  }
+
+  if (lightPosition[0] * lightPosition[0] > 4) {
+    isFlip = !isFlip;
+  }
+
+\end{lstlisting}
+
+Kode \ref{lst: movingLight} dibuat untuk memenuhi salah satu kriteria yang harus ada dalam projek, yaitu sumber cahaya yang bergerak. Disini saya hanya melakukan pergerakan simpel dari kanan ke kiri dan sebaliknya (namun karena \texttt{up} pada \texttt{lookAt} berada pada axis Y, maka cahaya tampak bergerak dari atas ke bawah)
+
+\begin{lstlisting}[language=javascript, label={lst: drawUniform}, caption={draw}]
+  drawMatUniform(gl, uniformLocation.projection, projectionMatrix);
+  drawMatUniform(gl, uniformLocation.modelView, modelViewMatrix);
+  drawMatUniform(gl, uniformLocation.normalView, normalViewMatrix);
+
+  drawVecUniform(gl, uniformLocation.lightPos, lightPosition);
+  drawVecUniform(gl, uniformLocation.ambientProduct, ambientProduct);
+  drawVecUniform(gl, uniformLocation.diffuseProduct, diffuseProduct);
+  drawVecUniform(gl, uniformLocation.specularProduct, specularProduct);
+
+  gl.uniform1f(uniformLocation.shininess, materialShininess);
+
+  gl.drawElements(gl.TRIANGLES, vertexLength, gl.UNSIGNED_SHORT, 0);
+
+return modelViewMatrix;
+\end{lstlisting}
+
+Terakhir tinggal melakukan setup uniform ke webGL dan melakukan \texttt{drawElement} untuk melakukan render model ke viewport.
+
+\subsection*{Fungsi Startup}
+
+Adalah fungsi yang pertama kali dipanggil saat dokumen html selesai di load oleh browser,
+
+\begin{lstlisting}[language=javascript, label={lst: eventListener}, caption={mengatur eventListener}]
+  /** .. */
+
+  gl.clearColor(102 / 255, 153 / 255, 1.0, 1.0);
+  gl.enable(gl.DEPTH_TEST);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+\end{lstlisting}
+
+Selain itu, juga terdapat fungsi webGL untuk mengatur warna background dan viewport.
+
+\section*{URL Demo dan Source Code}
+Seluruh source code dalam project ini dapat diakses dalam repository github saya, yaitu \url{https://github.com/chillytaka/webGL/tree/master/eas}, sedangkan untuk demo, dapat diakses di \url{https://chillytaka.github.io/webGL/eas/index.html}. Selain itu, juga terdapat daftar dari projek - projek webGL yang lain yang dapat diakses di \url{https://chillytaka.github.io/webGL/}
